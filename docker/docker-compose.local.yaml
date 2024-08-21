@@ -42,7 +42,7 @@ services:
     container_name: database_browser
     image: sqlpad/sqlpad:5
     ports:
-      - $DB_BROWSER_PORT:3000
+      - 2233:3000
     networks:
       - app-networks
     environment:

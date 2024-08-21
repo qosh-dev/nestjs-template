@@ -40,3 +40,10 @@ By running script <code> sh scripts/build-prod.sh </code>
   <li> For staging development: <code> sh scripts/build-prod.sh </code>  </li>
   <li> For locally testing staging игшв: <code> sh scripts/test-build-prod.sh </code>  </li>
 </ol>
+
+## Addons
+
+<ol>
+  <li> Sqlpad in local environment for database browsing: PORT 2233</li>
+  <li> Kibana in staging environment for logs: http://logs.${HOST} </li>
+</ol>

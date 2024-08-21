@@ -101,8 +101,12 @@ services:
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.15.0
-    ports:
-      - "5601:5601"
+    # ports:
+    #   - "5601:5601"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.kibana.rule=Host(`logs.${HOST}`)
+      - traefik.http.services.kibana.loadbalancer.server.port=5601
     depends_on:
       - backend
     networks:
