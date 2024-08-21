@@ -31,53 +31,13 @@ export class CacheService {
   async set(
     key: string,
     value: string | number | Buffer,
-    ttl: number,
+    ttl: number = CACHE_METADATA_TTL,
   ): Promise<void> {
     await this.instance.set(key, value);
     await this.instance.expire(key, ttl);
   }
 
-  async allKey(): Promise<string[]> {
-    return this.instance.keys('*');
-  }
-
   // ---------------------------------
-
-  generateCacheableKey(args: any[], context: string): string {
-    let keyParts: string[] = [];
-
-    for (const arg of args) {
-      if (typeof arg === 'string' || typeof arg === 'number') {
-        keyParts.push(String(arg));
-      } else if (typeof arg === 'object') {
-        for (const key in arg) {
-          const value = arg[key];
-          if (value !== undefined && value !== null) {
-            keyParts.push(`${key}-${value}`);
-          }
-        }
-      }
-    }
-
-    if (!keyParts.length) {
-      throw new Error('Invalid key');
-    }
-
-    return 'cached_' + context + '_' + keyParts.join('_');
-  }
-
-  async getOne<T = any>(key: string): Promise<T> {
-    const [object] = await this.instance.lrange(key, 0, 1);
-    if (object) {
-      return JSON.parse(object);
-    }
-    return;
-  }
-
-  async create(key: string, object: any): Promise<void> {
-    await this.instance.lpush(key, JSON.stringify(object));
-    await this.instance.expire(key, CACHE_METADATA_TTL);
-  }
 
   async createMany<T = any>(
     namespace: string,
@@ -104,17 +64,6 @@ export class CacheService {
     return objects;
   }
 
-  async getManyWithKeys<T = any>(namespace: string): Promise<Map<string, T[]>> {
-    const keys = await this.instance.keys(`${namespace}:*`);
-    const map = new Map<string, T[]>();
-    for (const key of keys) {
-      const records = await this.instance.lrange(key, 0, -1);
-      const parced = records.map((v) => JSON.parse(v));
-      map.set(key, parced);
-    }
-    return map;
-  }
-
   async deleteOne(key: string): Promise<void> {
     await this.instance.del(key);
   }
@@ -126,11 +75,26 @@ export class CacheService {
     }
   }
 
-  getKey(
-    namespace: string,
-    extra: { [n in string]: string | number | boolean },
-  ): string {
-    const keysExtra = Object.keys(extra).reduce((s, k) => s + extra[k], '');
-    return `${namespace}:${keysExtra}`;
+  createCacheableKey(args: any[], context: string): string {
+    let keyParts: string[] = [];
+
+    for (const arg of args) {
+      if (typeof arg === 'string' || typeof arg === 'number') {
+        keyParts.push(String(arg));
+      } else if (typeof arg === 'object') {
+        for (const key in arg) {
+          const value = arg[key];
+          if (value !== undefined && value !== null) {
+            keyParts.push(`${key}-${value}`);
+          }
+        }
+      }
+    }
+
+    if (!keyParts.length) {
+      throw new Error('Invalid key');
+    }
+
+    return 'cached_' + context + '_' + keyParts.join('_');
   }
 }

@@ -15,7 +15,7 @@ export const Cacheable = (options?: { ttlS?: number }): MethodDecorator => {
       target.cacheService = cacheService;
       target.logger = logger;
 
-      const _key = cacheService.generateCacheableKey(args, propertyKey);
+      const _key = cacheService.createCacheableKey(args, propertyKey);
       const ttl = options?.ttlS || CACHE_METADATA_TTL;
       const cachedValue = await cacheService.get(_key);
 

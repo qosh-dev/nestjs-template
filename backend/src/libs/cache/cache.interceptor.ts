@@ -23,10 +23,10 @@ export function CacheInterceptor(
       const extra = request[contextFrom] as {
         [n in string]: string | number | boolean;
       };
-      const key = this.cacheService.getKey(namespace, extra);
+      const key = this.cacheService.createCacheableKey([extra], namespace);
 
       if (Object.keys(extra).length) {
-        const cachedRecord = await this.cacheService.getOne(key);
+        const cachedRecord = await this.cacheService.get(key);
         if (cachedRecord) {
           return of(cachedRecord);
         }
@@ -37,7 +37,7 @@ export function CacheInterceptor(
           if (Array.isArray(body)) {
             await this.cacheService.createMany(namespace, body, 'id');
           } else {
-            await this.cacheService.create(key, body);
+            await this.cacheService.set(key, body);
           }
         }),
       );
