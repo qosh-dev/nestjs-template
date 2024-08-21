@@ -1,0 +1,2 @@
+export const CACHE_METADATA_KEY = 'CACHE_METADATA_KEY';
+export const CACHE_METADATA_TTL = 10;
