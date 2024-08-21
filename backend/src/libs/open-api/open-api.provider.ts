@@ -31,7 +31,6 @@ export class OpenApiProvider {
         path = `http://${Envs.HOST}/${route}`;
       }
 
-      console.log('Open api initiali');
       logger.debug('Open api initialized at ' + path);
     });
   }

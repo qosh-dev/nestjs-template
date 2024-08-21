@@ -37,6 +37,6 @@ By running script <code> sh scripts/build-prod.sh </code>
 
 <ol>
   <li> For local development: <code> sh scripts/build-local.sh </code>  </li>
-  <li> For production(staging) development: <code> sh scripts/build-prod.sh </code>  </li>
-  <li> For locally testing production(staging): <code> sh scripts/test-build-prod.sh </code>  </li>
+  <li> For staging development: <code> sh scripts/build-prod.sh </code>  </li>
+  <li> For locally testing staging игшв: <code> sh scripts/test-build-prod.sh </code>  </li>
 </ol>

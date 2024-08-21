@@ -27,6 +27,7 @@ async function bootstrap() {
       'Access-Control-Allow-Origin',
       'Origin',
       'Accept',
+      'tz'
     ],
   };
   app.setGlobalPrefix(Envs.API_PREFIX);

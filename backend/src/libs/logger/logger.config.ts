@@ -6,6 +6,8 @@ import { Params } from 'nestjs-pino';
 import * as path from 'path';
 import pino, { DestinationStream } from 'pino';
 import { Options } from 'pino-http';
+import { NodeEnv } from 'src/config/config-validation';
+import { Envs } from 'src/config/config.module';
 import { IRequestContext, SystemHeaders } from '../als/app-context.common';
 import { TransportType } from './logger.module';
 
@@ -35,7 +37,7 @@ export class LoggerParams implements Params {
       },
       transport: {
         targets: this.transportTargets(),
-        // level: 'debug',
+        level: 'debug',
       },
       mixin: () => this.customizeLog(),
       customProps: () => this.customizeLog(),
@@ -47,8 +49,6 @@ export class LoggerParams implements Params {
     method: pino.LogFn,
     level: number,
   ) {
-    console.log("sadasda")
-
     let inputArgs = _inputArgs as any;
     const context = (inputArgs[0] as any).context;
     const exceptedContexts = ['RouterExplorer', 'RoutesResolver'];
@@ -72,7 +72,7 @@ export class LoggerParams implements Params {
         };
       }
     }
-    
+
     return method.apply(this, inputArgs);
   }
 
@@ -84,7 +84,8 @@ export class LoggerParams implements Params {
   }
 
   private transportTargets() {
-    let logsDirectory: string = path.join(__dirname, '..', 'logs/');
+    let logsDirectory: string = path.join(__dirname, '../../..', 'logs/');
+
     const transportFormatted: TransportType[] = [
       {
         target: 'pino/file',
@@ -97,15 +98,16 @@ export class LoggerParams implements Params {
       },
     ];
 
-    // if (Envs.NODE_ENV === NodeEnv.development) {
-    transportFormatted.push({
-      target: 'pino-pretty',
-      options: {
-        name: 'terminal',
-        colorize: true,
-        singleLine: true,
-      },
-    });
+    if (Envs.NODE_ENV === NodeEnv.development) {
+      transportFormatted.push({
+        target: 'pino-pretty',
+        options: {
+          name: 'terminal',
+          colorize: true,
+          singleLine: true,
+        },
+      });
+    }
 
     return transportFormatted;
   }

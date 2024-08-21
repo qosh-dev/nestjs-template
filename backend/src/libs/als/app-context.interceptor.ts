@@ -18,7 +18,7 @@ export class AppContextInterceptor implements NestInterceptor {
     const contextType = execContext.getType() as string;
     let requestId = existStore?.[SystemHeaders.xRequestId] ?? '';
     let userId: string;
-    let tz: string =   DateUtils.localTimestampOffset;
+    let tz: string = DateUtils.localTimestampOffset;
 
     if (contextType === 'http') {
       const request = execContext.switchToHttp().getRequest();
