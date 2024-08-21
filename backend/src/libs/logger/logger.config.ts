@@ -35,7 +35,7 @@ export class LoggerParams implements Params {
       },
       transport: {
         targets: this.transportTargets(),
-        level: 'debug',
+        // level: 'debug',
       },
       mixin: () => this.customizeLog(),
       customProps: () => this.customizeLog(),
@@ -47,6 +47,8 @@ export class LoggerParams implements Params {
     method: pino.LogFn,
     level: number,
   ) {
+    console.log("sadasda")
+
     let inputArgs = _inputArgs as any;
     const context = (inputArgs[0] as any).context;
     const exceptedContexts = ['RouterExplorer', 'RoutesResolver'];

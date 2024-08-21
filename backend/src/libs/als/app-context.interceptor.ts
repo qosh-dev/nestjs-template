@@ -60,9 +60,7 @@ export class AppContextInterceptor implements NestInterceptor {
     execContext: ExecutionContext,
   ) {
     const requestId = store[SystemHeaders.xRequestId];
-    const employeeId = store[SystemHeaders.userId];
     const res = execContext.switchToHttp().getResponse();
     requestId && res.setHeader(SystemHeaders.xRequestId, requestId);
-    // employeeId && res.setHeader(SystemHeaders.employeeId, employeeId);
   }
 }

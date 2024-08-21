@@ -8,8 +8,7 @@ RUN mkdir -p /build/
 
 RUN cp -R pre_build/dist /build/dist
 RUN cp -R pre_build/node_modules /build/node_modules
-# RUN cp -R pre_build/uploads /build/uploads
-# RUN cp -R pre_build/logs /build/logs
+RUN cp -R pre_build/logs /build/logs
 
 RUN rm -r /pre_build
 

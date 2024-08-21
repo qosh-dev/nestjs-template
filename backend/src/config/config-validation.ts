@@ -88,12 +88,5 @@ export class EnvironmentVariables {
   REDIS_PASSWORD: string = null;
 
   // ---------------------------------------------------------------
-
-  @IsNotEmpty()
-  @IsString()
-  JWT_SECRET: string = null;
-
-  @IsNotEmpty()
-  @IsNumber()
-  JWT_EXPIRE: number = null;
+  
 }
