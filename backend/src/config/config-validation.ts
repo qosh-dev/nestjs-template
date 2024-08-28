@@ -1,5 +1,11 @@
 import { Transform } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsNumberString,
+  IsString,
+} from 'class-validator';
 
 export enum NodeEnv {
   test = 'test',
@@ -11,7 +17,7 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   @IsEnum(NodeEnv)
   @IsString()
-  NODE_ENV: NodeEnv = NodeEnv.development;
+  NODE_ENV: NodeEnv = null;
 
   // ---------------------------------------------------------------
 
@@ -22,9 +28,9 @@ export class EnvironmentVariables {
       return '*';
     }
 
-    const splitted = t.value.split(',');
+    const splitted = t.value.split(',').map((v) => v.trim());
     if (splitted.length === 1) {
-      return [t.value];
+      return [t.value.trim()];
     } else {
       return splitted;
     }
@@ -33,11 +39,11 @@ export class EnvironmentVariables {
 
   @IsNotEmpty()
   @IsString()
-  API_PREFIX: string = null;
+  APP_PREFIX: string = null;
 
   @IsNotEmpty()
-  @IsNumber()
-  API_PORT: number = null;
+  @IsNumberString()
+  PORT: string = null;
 
   @IsNotEmpty()
   @IsString()
@@ -88,5 +94,4 @@ export class EnvironmentVariables {
   REDIS_PASSWORD: string = null;
 
   // ---------------------------------------------------------------
-  
 }
