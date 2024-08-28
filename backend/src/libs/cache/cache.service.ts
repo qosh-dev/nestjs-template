@@ -1,27 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 import Redis from 'ioredis';
 import { Envs } from 'src/config/config.module';
-import { CACHE_METADATA_KEY, CACHE_METADATA_TTL } from './cache.common';
+import { CACHE_SERVICE_METADATA_KEY } from 'src/utils/utils/utils.common';
 
 @Injectable()
 export class CacheService {
-  private instance: Redis;
+  redis: Redis;
 
-  constructor(private readonly c: ConfigService) {}
+  constructor() {}
 
   onModuleInit() {
-    this.instance = new Redis({
+    this.redis = new Redis({
       host: Envs.REDIS_HOST,
       port: Envs.REDIS_PORT,
       password: Envs.REDIS_PASSWORD,
     });
-    Reflect.defineMetadata(CACHE_METADATA_KEY, this, CacheService);
+    Reflect.defineMetadata(CACHE_SERVICE_METADATA_KEY, this, CacheService);
   }
 
   async get<T>(key: string): Promise<T | null> {
-    const data = await this.instance.get(key);
+    const data = await this.redis.get(key);
     if (!data) {
       return null;
     }
@@ -31,51 +30,19 @@ export class CacheService {
   async set(
     key: string,
     value: string | number | Buffer,
-    ttl: number = CACHE_METADATA_TTL,
+    ttl: number,
   ): Promise<void> {
-    await this.instance.set(key, value);
-    await this.instance.expire(key, ttl);
+    await this.redis.set(key, value);
+    await this.redis.expire(key, ttl);
+  }
+
+  async allKey(): Promise<string[]> {
+    return this.redis.keys('*');
   }
 
   // ---------------------------------
 
-  async createMany<T = any>(
-    namespace: string,
-    objects: T[],
-    identifierField: keyof T,
-  ): Promise<void> {
-    const pipeline = this.instance.pipeline();
-    for (const object of objects) {
-      const key = `${namespace}:${object[identifierField]}`;
-      pipeline.lpush(key, JSON.stringify(object));
-      pipeline.expire(key, CACHE_METADATA_TTL);
-    }
-    await pipeline.exec();
-  }
-
-  async getMany<T = any>(namespace: string): Promise<T[]> {
-    const keys = await this.instance.keys(`${namespace}:*`);
-    const objects: any[] = [];
-    for (const key of keys) {
-      const records = await this.instance.lrange(key, 0, -1);
-      const parced = records.map((v) => JSON.parse(v));
-      objects.push(...parced);
-    }
-    return objects;
-  }
-
-  async deleteOne(key: string): Promise<void> {
-    await this.instance.del(key);
-  }
-
-  async drop(namespace: string): Promise<void> {
-    const keys = await this.instance.keys(`${namespace}:*`);
-    if (keys.length > 0) {
-      await this.instance.del(keys);
-    }
-  }
-
-  createCacheableKey(args: any[], context: string): string {
+  generateCacheableKey(args: any[],context: string): string {
     let keyParts: string[] = [];
 
     for (const arg of args) {
@@ -95,6 +62,6 @@ export class CacheService {
       throw new Error('Invalid key');
     }
 
-    return 'cached_' + context + '_' + keyParts.join('_');
+    return "cached_" + context + '_' + keyParts.join('_');
   }
 }

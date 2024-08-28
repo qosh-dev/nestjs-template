@@ -1,11 +1,11 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ICreateOneBase } from 'src/libs/interfaces/create-one-base.interface';
-import { IFindManyBase } from 'src/libs/interfaces/find-many-base.interface';
-import { IFindOneBase } from 'src/libs/interfaces/find-one-base.interface';
+import { ICreateOneBase } from 'src/libs/types/interfaces/create-one-base.interface';
+import { IFindManyBase } from 'src/libs/types/interfaces/find-many-base.interface';
+import { IFindOneBase } from 'src/libs/types/interfaces/find-one-base.interface';
 import { EntityManager } from 'typeorm';
-import { IFindManyResponseBase } from '../interfaces/find-many-response-base.interface';
 import { BaseEntity } from './entity';
 import { RepositoryBase } from './repository';
+import { IFindManyResponseBase } from './types';
 
 export class BaseService<Eb extends BaseEntity> {
   constructor(readonly repo: RepositoryBase<Eb>) {}
@@ -28,7 +28,7 @@ export class BaseService<Eb extends BaseEntity> {
     return this.repo.findManyBy(payload);
   }
 
-  async edit(
+  async edit<I extends IFindOneBase>(
     id: Required<IFindOneBase['id']>,
     props: Partial<Omit<Eb, 'id'>>,
     t = this.repo.orm,

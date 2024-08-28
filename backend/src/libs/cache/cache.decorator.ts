@@ -1,5 +1,8 @@
 import { Logger } from '@nestjs/common';
-import { CACHE_METADATA_KEY, CACHE_METADATA_TTL } from './cache.common';
+import {
+  CACHE_SERVICE_METADATA_KEY,
+  CURRENCY_RATE_TTL,
+} from 'src/utils/utils/utils.common';
 import { CacheService } from './cache.service';
 
 export const Cacheable = (options?: { ttlS?: number }): MethodDecorator => {
@@ -9,14 +12,14 @@ export const Cacheable = (options?: { ttlS?: number }): MethodDecorator => {
 
     descriptor.value = async (...args: any[]) => {
       const cacheService: CacheService = Reflect.getMetadata(
-        CACHE_METADATA_KEY,
+        CACHE_SERVICE_METADATA_KEY,
         CacheService,
       );
       target.cacheService = cacheService;
-      target.logger = logger;
-
-      const _key = cacheService.createCacheableKey(args, propertyKey);
-      const ttl = options?.ttlS || CACHE_METADATA_TTL;
+      target.logger = logger
+      
+      const _key = cacheService.generateCacheableKey(args, propertyKey);
+      const ttl = options?.ttlS || CURRENCY_RATE_TTL;
       const cachedValue = await cacheService.get(_key);
 
       if (cachedValue) return cachedValue;

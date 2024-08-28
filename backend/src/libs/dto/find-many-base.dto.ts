@@ -4,18 +4,17 @@ import { Expose, plainToInstance, Transform } from 'class-transformer';
 import { IsDefined, IsEnum, IsInt, IsOptional, Min } from 'class-validator';
 import { EnumAsUnion } from 'src/libs/base-structs/types';
 import { IdsDtoOptional } from 'src/libs/dto/ids.dto';
-
-import { isEqualStringArray } from 'src/libs/common/methods';
-import { SortOrderEnum } from '../enums/sort.enum';
+import { areStringArraysEqual } from 'src/libs/test/test.utils';
 import {
   IFindManyBase,
   IFindManyBaseSortItem,
-} from '../interfaces/find-many-base.interface';
+  IFindPaginationBase,
+  SortOrderEnum,
+} from '../types/interfaces/find-many-base.interface';
 
 function FindManyBaseSortItem<SEnum extends Record<string, string>>(
   SortEnum: SEnum,
 ) {
-  
   class Class implements IFindManyBaseSortItem<SEnum> {
     @ApiProperty({
       description: 'Sort by column item',
@@ -50,14 +49,10 @@ export function FindManyBaseDto<SEnum extends Record<string, string>>(
 
   function getSortDescription() {
     const cols = `Allowed column: (${Object.values(SortEnum).join(', ')})`;
-    const orders = `Allowed order: (${Object.values(SortOrderEnum).join(
-      ', ',
-    )})`;
+    const orders = `Allowed order: (${Object.values(SortOrderEnum).join(', ')})`;
 
     const key = Object.keys(SortEnum)[0];
-    const example = `{ "column": "${SortEnum[key]}", "order": "${
-      Math.round(Math.random()) >= 0.5 ? 'ASC' : 'DESC'
-    }" }`;
+    const example = `{ "column": "${SortEnum[key]}", "order": "${Math.round(Math.random()) >= 0.5 ? 'ASC' : 'DESC'}" }`;
 
     return [cols, orders, example].join('<br/> ');
   }
@@ -117,13 +112,13 @@ export function FindManyBaseDto<SEnum extends Record<string, string>>(
       const obj = JSON.parse(plain);
       const modelKeys = Object.getOwnPropertyNames(new SortModel());
       const objKeys = Object.keys(obj);
-      if (!isEqualStringArray(modelKeys, objKeys)) {
+      if (!areStringArraysEqual(modelKeys, objKeys)) {
         throw new UnprocessableEntityException('Invalid payload');
       }
       const model = plainToInstance(SortModel, obj);
-      const columnEnum = Object.values(SortEnum);
+      const colEnum = Object.values(SortEnum);
       const orderEnum = Object.values(SortOrderEnum);
-      if (!columnEnum.includes(model.column)) {
+      if (!colEnum.includes(model.column)) {
         throw new UnprocessableEntityException(
           `Invalid sort.column: ${model.column}`,
         );
@@ -140,4 +135,34 @@ export function FindManyBaseDto<SEnum extends Record<string, string>>(
   }
 
   return Class;
+}
+
+export class PaginationBaseDto implements IFindPaginationBase {
+  @ApiProperty({
+    description: 'Records page',
+    required: false,
+  })
+  @Expose()
+  @Transform((t) => {
+    const v = Number(t.value);
+    return !isNaN(v) ? v : 1;
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @ApiProperty({
+    description: 'Records limit per page',
+    required: false,
+  })
+  @Expose()
+  @Transform((t) => {
+    const v = Number(t.value);
+    return !isNaN(v) ? v : 10;
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  limit?: number = 10;
 }

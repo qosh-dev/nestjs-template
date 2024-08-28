@@ -2,9 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { IsDefined, IsOptional } from 'class-validator';
 import { randomUUID } from 'crypto';
-import { IsNotEmptyArray } from '../decorators/is-not-empty-array.decorator';
-import { IsUuidArray } from '../decorators/is-uuid-array.decorator';
-import { TransformStringArray } from '../decorators/transform-string-array.decorator';
+import { TransformStringArray } from '../validation/transformers/transform-string-array.decorator';
+import { IsNotEmptyArray } from '../validation/validators/is-not-empty-array.decorator';
+import { IsUuidArray } from '../validation/validators/is-uuid-array.decorator';
 
 export abstract class IdsDtoOptional {
   @ApiProperty({

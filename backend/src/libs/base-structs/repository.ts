@@ -4,7 +4,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import * as lodash from 'lodash';
-import { IFindManyBase } from 'src/libs/interfaces/find-many-base.interface';
+import { IFindManyBase } from 'src/libs/types/interfaces/find-many-base.interface';
 import {
   EntityManager,
   EntityTarget,
@@ -13,8 +13,8 @@ import {
   QueryFailedError,
 } from 'typeorm';
 import { CommonError } from '../common/common.error';
-import { IFindManyResponseBase } from '../interfaces/find-many-response-base.interface';
 import { BaseEntity } from './entity';
+import { IFindManyResponseBase } from './types';
 
 export class RepositoryBase<Eb extends BaseEntity> {
   logger = new Logger(RepositoryBase.name);
@@ -83,7 +83,7 @@ export class RepositoryBase<Eb extends BaseEntity> {
           if (!fields[_field]) continue;
           const { operand, prop, field, value } = this._baseConditions(
             _field,
-            fields[_field],
+            fields,
           );
           queryBuilder.andWhere(`${field} ${operand} :${prop}`, {
             [prop]: value,
@@ -96,10 +96,10 @@ export class RepositoryBase<Eb extends BaseEntity> {
           queryBuilder.addOrderBy(`"${s.column}"`, s.order);
         }
       }
-      const [records, totalCount] = (await queryBuilder
+      const [records, totalCount] = await queryBuilder
         .take(limit)
         .skip(skip)
-        .getManyAndCount()) as any;
+        .getManyAndCount();
 
       return this.toManyResponse({
         page: payload.page,
@@ -130,7 +130,7 @@ export class RepositoryBase<Eb extends BaseEntity> {
     }
   }
 
-  async existAll(ids: Eb['id'][]): Promise<boolean> {
+  async existAll(ids: string[]): Promise<boolean> {
     try {
       const count = await this.orm.count(this.entityClass, {
         where: { id: In(ids) } as any,
@@ -144,9 +144,9 @@ export class RepositoryBase<Eb extends BaseEntity> {
     }
   }
 
-  async update(
+  async update<E extends Eb>(
     id: Eb['id'],
-    props: Partial<Eb>,
+    props: Partial<E>,
     t: EntityManager = this.orm,
   ) {
     try {
@@ -154,13 +154,15 @@ export class RepositoryBase<Eb extends BaseEntity> {
       return res.affected !== 0;
     } catch (e) {
       const error = e as QueryFailedError;
+      this.logger.error(error);
+
       return false;
     }
   }
 
-  async updateMany(
+  async updateMany<E extends Eb>(
     ids: Eb['id'][],
-    props: Partial<Eb>,
+    props: Partial<E>,
     t: EntityManager = this.orm,
   ) {
     try {
@@ -169,9 +171,12 @@ export class RepositoryBase<Eb extends BaseEntity> {
         { id: In(ids) },
         props as any,
       );
-      return res.affected !== ids.length;
+      console.log({ res });
+      return res.affected === ids.length;
     } catch (e) {
       const error = e as QueryFailedError;
+      console.log({ error });
+      this.logger.error(error);
       return false;
     }
   }
@@ -205,7 +210,11 @@ export class RepositoryBase<Eb extends BaseEntity> {
 
   // ------------------------------------------------------------------------------
 
-  _baseConditions(field: string, value: any) {
+  _baseConditions<P extends IFindManyBase<any>>(
+    field: string,
+    fields: Omit<P, 'page' | 'limit' | 'sort' | 'ids'>,
+  ) {
+    let value = fields[field];
     let operand = '=';
     let prop = field;
     if (field.endsWith('Gte') || field.endsWith('Lte')) {

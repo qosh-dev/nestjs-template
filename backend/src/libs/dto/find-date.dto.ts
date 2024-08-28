@@ -1,7 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
-import { IsNumberString, IsOptional } from "class-validator";
-import { IFindDate } from "../interfaces/find-date-base.interface";
+import { IsEnum, IsNumberString, IsOptional } from "class-validator";
+import { AnaliticSegment } from "src/modules/operation/type/find-analitic-range.interface";
+import { IFindDate } from "../types/interfaces/find-date-base.interface";
 
 export class FindDateDto implements IFindDate {
   @ApiProperty({
@@ -22,4 +23,12 @@ export class FindDateDto implements IFindDate {
   @IsNumberString()
   dateLte: number;
 
+  @ApiProperty({
+    required: false,
+    enum: AnaliticSegment
+  })
+  @IsOptional()
+  @Expose()
+  @IsEnum(AnaliticSegment)
+  segment: AnaliticSegment;
 }

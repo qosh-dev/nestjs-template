@@ -1,7 +1,7 @@
 export type Expand<T> = T extends object
   ? T extends infer O
-    ? { [K in keyof O]: O[K] }
-    : never
+  ? { [K in keyof O]: O[K] }
+  : never
   : T;
 
 /**
@@ -10,8 +10,8 @@ export type Expand<T> = T extends object
  */
 export type ExpandDeep<T> = T extends object
   ? T extends infer O
-    ? { [K in keyof O]: ExpandDeep<O[K]> }
-    : never
+  ? { [K in keyof O]: ExpandDeep<O[K]> }
+  : never
   : T;
 
 type OmitNever<T> = {
@@ -20,8 +20,8 @@ type OmitNever<T> = {
 
 export type ExcludeObjectArrays<T> = Expand<{
   [K in keyof T as Exclude<T[K], object | Array<any>> extends never
-    ? never
-    : K]: T[K];
+  ? never
+  : K]: T[K];
 }>;
 
 type Primitives = string | number | boolean | Date | never | null | undefined;
@@ -29,11 +29,36 @@ type Primitives = string | number | boolean | Date | never | null | undefined;
 
 export type Select<T> = Partial<{
   [K in keyof T]: T[K] extends string | number | boolean | Date
-    ? boolean
+  ? boolean
+  : T[K] extends Array<infer U>
+  ? Select<U> | boolean
+  : Select<T[K]> | boolean;
+}>;
+
+// ---------------------------------------------------------------
+export type RelationSelect<T> = OmitNever<
+  Partial<{
+    [K in keyof T]: T[K] extends Primitives
+    ? never
     : T[K] extends Array<infer U>
     ? Select<U> | boolean
     : Select<T[K]> | boolean;
-}>;
+  }>
+>;
+
+export type RelationSelectReturn<T extends any, ObjT> = Expand<
+  OmitNever<{
+    [K in keyof ObjT]: K extends keyof T
+    ? ObjT[K] extends Array<infer It>
+    ? RelationSelectReturn<It, T[K]>[]
+    : T[K] extends Primitives
+    ? T[K]
+    : RelationSelectReturn<ObjT[K], T[K]>
+    : ObjT[K] extends Primitives
+    ? ObjT[K]
+    : never;
+  }>
+>;
 
 // ---------------------------------------------------------------
 
@@ -43,4 +68,13 @@ type StringValues<T> = {
 
 export type EnumAsUnion<T> = `${StringValues<T>}`;
 
+
 // ---------------------------------------------------------------
+
+export interface IFindManyResponseBase<T> {
+  data: T[];
+  count: number;
+  total: number;
+  page: number;
+  pageCount: number;
+};

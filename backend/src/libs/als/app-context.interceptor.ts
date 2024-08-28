@@ -17,14 +17,14 @@ export class AppContextInterceptor implements NestInterceptor {
     const existStore: Partial<IRequestContext> = this.als?.getStore() ?? {};
     const contextType = execContext.getType() as string;
     let requestId = existStore?.[SystemHeaders.xRequestId] ?? '';
-    let userId: string;
-    let tz: string = DateUtils.localTimestampOffset;
+    let employeId: string;
+    let tz: string =   DateUtils.localTimestampOffset;
 
     if (contextType === 'http') {
       const request = execContext.switchToHttp().getRequest();
       const headers = request.headers;
       requestId = headers[SystemHeaders.xRequestId] as string;
-      userId = request.currentUser?.id;
+      employeId = request.currentEmployee?.id;
       if (headers[SystemHeaders.tz]) {
         tz = headers[SystemHeaders.tz];
       }
@@ -37,7 +37,7 @@ export class AppContextInterceptor implements NestInterceptor {
     const store: IRequestContext = {
       ...existStore,
       [SystemHeaders.xRequestId]: requestId,
-      [SystemHeaders.userId]: userId,
+      [SystemHeaders.employeeId]: employeId,
       [SystemHeaders.tz]: tz,
     };
     DateUtils.createInstance(store.tz);
@@ -60,7 +60,9 @@ export class AppContextInterceptor implements NestInterceptor {
     execContext: ExecutionContext,
   ) {
     const requestId = store[SystemHeaders.xRequestId];
+    const employeeId = store[SystemHeaders.employeeId];
     const res = execContext.switchToHttp().getResponse();
     requestId && res.setHeader(SystemHeaders.xRequestId, requestId);
+    // employeeId && res.setHeader(SystemHeaders.employeeId, employeeId);
   }
 }

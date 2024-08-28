@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { IsOptional, IsUUID } from 'class-validator';
-import { IFindOneBase } from '../interfaces/find-one-base.interface';
+import { IFindOneBase } from '../types/interfaces/find-one-base.interface';
 
 export class FindOneBaseDTO implements IFindOneBase {
   @ApiProperty({
